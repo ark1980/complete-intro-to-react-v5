@@ -1,19 +1,29 @@
-import React, { useState, useEffect, useContext } from "react";
-import pf, { ANIMALS } from "petfinder-client";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  FunctionComponent
+} from "react";
+import { RouteComponentProps } from "@reach/router";
+import pf, { ANIMALS, Pet } from "petfinder-client";
 import useDropdown from "./useDropdown";
 import Results from "./Results";
 import ThemeContext from "./ThemeContext";
+
+if (!process.env.API_KEY || !process.env.API_SECRET) {
+  throw new Error("you need API keys");
+}
 
 const petfinder = pf({
   key: process.env.API_KEY,
   secret: process.env.API_SECRET
 });
 
-const SearchParams = () => {
+const SearchParams: FunctionComponent<RouteComponentProps> = () => {
   const [theme, setTheme] = useContext(ThemeContext);
   const [location, updateLocation] = useState("Seattle, WA");
-  const [breeds, updateBreeds] = useState([]);
-  const [pets, setPets] = useState([]);
+  const [breeds, updateBreeds] = useState([] as string[]);
+  const [pets, setPets] = useState([] as Pet[]);
   const [animal, AnimalDropdown] = useDropdown("Animal", "dog", ANIMALS);
   const [breed, BreedDropdown, updateBreed] = useDropdown("Breed", "", breeds);
 
@@ -25,11 +35,13 @@ const SearchParams = () => {
       output: "full"
     });
 
-    setPets(
-      Array.isArray(res.petfinder.pets.pet)
-        ? res.petfinder.pets.pet
-        : [res.petfinder.pets.pet]
-    );
+    if (res.petfinder.pets) {
+      setPets(
+        Array.isArray(res.petfinder.pets.pet)
+          ? res.petfinder.pets.pet
+          : [res.petfinder.pets.pet as Pet]
+      );
+    }
   }
 
   useEffect(() => {
@@ -37,11 +49,13 @@ const SearchParams = () => {
     updateBreed("");
 
     petfinder.breed.list({ animal }).then(data => {
-      updateBreeds(
-        Array.isArray(data.petfinder.breeds.breed)
-          ? data.petfinder.breeds.breed
-          : [data.petfinder.breeds.breed]
-      );
+      if (data.petfinder.breeds) {
+        updateBreeds(
+          Array.isArray(data.petfinder.breeds.breed)
+            ? data.petfinder.breeds.breed
+            : [data.petfinder.breeds.breed as string]
+        );
+      }
     }, console.error);
   }, [animal]);
 

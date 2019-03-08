@@ -1,9 +1,19 @@
 import React from "react";
 import { Link } from "@reach/router";
+import { PetMedia, PetPhoto } from "petfinder-client";
 
-const Pet = props => {
+interface IProps {
+  name: string;
+  animal: string;
+  breed: string;
+  media: PetMedia;
+  location: string;
+  id: string;
+}
+
+const Pet = (props: IProps) => {
   const { name, animal, breed, media, location, id } = props;
-  let photos = [];
+  let photos: PetPhoto[] = [];
   if (media && media.photos && media.photos.photo) {
     photos = media.photos.photo.filter(photo => photo["@size"] === "pn");
   }
